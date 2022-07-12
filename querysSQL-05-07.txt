@@ -1,0 +1,144 @@
+CREATE DATABASE DB_Aula
+USE DB_Aula
+
+SELECT DATEFORMAT FROM SYSLANGUAGES WHERE NAME = @@LANGUAGE
+
+CREATE TABLE Departamentos( 
+	Codigo INT PRIMARY KEY, 
+	Nome VARCHAR(200), 
+	Localizacao VARCHAR(80)
+)
+
+CREATE TABLE Funcionarios( 
+	Codigo INT PRIMARY KEY IDENTITY, 
+	PrimeiroNome VARCHAR(50), 
+	SegundoNome VARCHAR(60), 
+	UltimoNome VARCHAR(60), 
+	DataNasc DATE, 
+	CPF VARCHAR(11), 
+	RG VARCHAR(9),
+	Endereco VARCHAR(200),
+	CEP VARCHAR(13),
+	Cidade VARCHAR(200),
+	NumFone VARCHAR(12),
+	Funcao VARCHAR(65),
+	Salario INT,
+	fk_CodigoDepartamento INT FOREIGN KEY REFERENCES Departamentos(Codigo),
+)
+
+select * from Departamentos
+select * from Funcionarios
+
+ALTER TABLE Departamentos 
+ADD CodigoFuncionario int foreign key references Funcionarios(Codigo)
+
+INSERT INTO Funcionarios VALUES ('João', 'Pedro', 'Alves', '02/15/1995', '13015325374', '138561421', 'Rua Sei la', '82651324', 'Curitiba-PR', '4299643-1531', 'Operador', 2100, 2),
+('Maria', 'Antonia', 'Cazares', '03/21/1990', '13014725301', '998561759', 'Rua Alguma Coisa', '45651782', 'Curitiba-PR', '4299655-7803', 'Gerente', 7862, 2),
+('Matehus', 'Souza', 'Alves', '12/02/2001', '18515325444', '148561451', 'Rua Auroro', '88651324', 'Pinhais-PR', '4199678-6530', 'Menor Aprendiz', 1500, 1),
+('Elgson', 'Menino', 'Eggs', '06/19/2003', '55015325994', '228561341', 'Rua do Elgson', '75651300', 'Curitiba-PR', '4199003-1565', 'Menor Aprendiz', 1500, 3),
+('Maite', '', 'Feld', '02/04/2004', '40015325554', '228561624', 'Rua Professor la', '76651300', 'Curitiba-PR', '4198640-0078', 'Gerente', 8000, 1),
+('Kailane', 'Urbano', 'Rosário', '07/08/2003', '88015325864', '998564551', 'Rua Aparecida', '75651015', 'Curitiba-PR', '4198842-1507', 'Administração', 4100, 4),
+('Luiz', 'Henrique', 'Reis', '04/01/2003', '13215325354', '132561473', 'Rua Sanito Moser', '81451367', 'Curitiba-PR', '4199753-1232', 'Diretor Geral', 99900, 6),
+('Leonardo', 'Skanavaca', 'Falango', '07/22/2003', '09015325350', '458561470', 'Rua Paua Gomes', '80651366', 'Curitiba-PR', '4199643-0000', 'Gerente', 10000, 5)
+
+INSERT INTO Departamentos VALUES (1,'VSO','101'), (2,'ETS','404'), (3,'ISCO','201'), (4,'ICO','200'),
+(5,'ALMX','312'), (6,'Ambulatório','96')
+
+
+UPDATE Departamentos 
+SET CodigoFuncionario = 7
+WHERE Codigo = 6
+
+
+/*Exercício 1: Listar nome e sobrenome ordenado por sobrenome*/
+SELECT PrimeiroNome, UltimoNome from Funcionarios
+ORDER BY UltimoNome
+
+/*Exercício 2: Listar todos os campos de funcionários ordenados por cidade*/
+SELECT * from Funcionarios
+ORDER BY Cidade
+
+/*Exercício 3: Liste os funcionários que têm salário superior a R$ 1.000,00 ordenados pelo nome completo*/
+SELECT * from Funcionarios WHERE Salario > 1000
+ORDER BY PrimeiroNome
+
+/*Exercício 4: Liste a data de nascimento e o primeiro nome dos funcionários
+ordenados do mais novo para o mais velho*/
+SELECT PrimeiroNome, DataNasc  from Funcionarios
+ORDER BY DataNasc DESC
+
+/*Exercício 5: Exclua o id 5 da tabela Funcionarios.*/
+DELETE FROM Funcionarios WHERE Codigo = 5;
+
+/*Exercício 6: Liste o total da folha de pagamento.*/
+SELECT SUM(Salario) AS Folha_Pagamento FROM Funcionarios
+
+/*Exercício 7: Liste o nome, o nome do departamento e a função de todos os
+funcionários*/
+SELECT f.PrimeiroNome, f.Funcao, d.Nome FROM Funcionarios f
+INNER JOIN Departamentos d ON d.Codigo = fk_CodigoDepartamento
+
+/*Exercício 8: Liste os funcionários que têm salário inferior a R$ 1.000,00 ordenados
+pelo nome completo*/
+SELECT PrimeiroNome, Salario from Funcionarios
+WHERE Salario < 1000
+ORDER BY PrimeiroNome
+
+/*Exercício 9: Liste o valor da folha de pagamento de cada departamento (nome)*/
+SELECT DISTINCT f.Salario, d.Nome FROM Funcionarios f
+INNER JOIN Departamentos d ON d.Codigo = fk_CodigoDepartamento
+
+/*Exercício 10: Liste os departamentos dos funcionários que têm a função de supervisor*/
+SELECT f.PrimeiroNome, d.Nome FROM Funcionarios f
+INNER JOIN Departamentos d ON d.Codigo = fk_CodigoDepartamento
+WHERE f.Funcao = 'Gerente'
+
+/*Exercício 11:Liste a quantidade de funcionários desta empresa ordenados por cidade*/
+SELECT COUNT(Codigo), Cidade FROM Funcionarios
+GROUP BY Cidade	
+
+/*Exercício 12:Me mostre todos os funcionários que começam com a letra ‘a’ e termine com
+a letra “s”*/
+SELECT PrimeiroNome FROM Funcionarios WHERE PrimeiroNome LIKE 'L%'
+AND PrimeiroNome LIKE '%z'
+
+/*Exercício 13:Liste o menor salário pago pela empresa em cada departamento*/ 
+SELECT MIN(Salario) AS Menor_Salario FROM Funcionarios
+GROUP BY fk_CodigoDepartamento
+
+/*Exercício 14:Ordene o nome dos funcionários em ordem decrescente .*/
+SELECT PrimeiroNome FROM Funcionarios
+ORDER BY PrimeiroNome DESC
+
+/*Exercício 15: Altere o valor da tabela Funcionario deixando os 4 últimos
+SegundoNome em nulo*/
+UPDATE Funcionarios SET SegundoNome='NULL' WHERE SegundoNome IN
+(SELECT SegundoNome FROM Funcionarios ORDER BY id_titulo DESC 4)
+
+/*Exercício 16:Liste os nomes dos funcionários que moram em Recife e que exerçam
+a função de Programador*/
+SELECT PrimeiroNome, Cidade, Funcao FROM Funcionarios 
+WHERE Cidade = 'Curitiba-PR' AND Funcao = 'Operador'
+
+/*Exercício 17: Liste os nomes dos funcionários que trabalham no departamento
+Pessoal*/
+SELECT f.PrimeiroNome, d.Nome FROM Funcionarios f
+INNER JOIN Departamentos d ON d.Codigo = fk_CodigoDepartamento
+WHERE d.Nome = 'ETS'
+
+/*Exercício 18: Liste o nome e o departamento de todos os funcionários que ganham
+mais de 5 mil.*/
+SELECT f.PrimeiroNome, d.Nome, f.Salario FROM Funcionarios f
+INNER JOIN Departamentos d ON d.Codigo = fk_CodigoDepartamento
+WHERE f.Salario > 5000
+
+/*Exercício 19: Liste os nomes dos funcionários que moram em Curitiba e que
+exerçam a função de Telefonista*/
+SELECT PrimeiroNome, Cidade, Funcao FROM Funcionarios
+WHERE Cidade = 'Curitiba-PR' AND Funcao = 'Operador'
+
+/*Exercício 20: Liste os departamentos dos funcionários que têm a função de Programador e
+que recebam mais que 2 mil reais.*/
+SELECT f.PrimeiroNome, f.Funcao, d.Nome, f.Salario FROM Funcionarios f
+INNER JOIN Departamentos d ON d.Codigo = fk_CodigoDepartamento
+WHERE f.Salario > 2000 AND f.Funcao = 'Gerente'

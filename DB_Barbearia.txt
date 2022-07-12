@@ -1,0 +1,74 @@
+CREATE DATABASE DB_AULA
+USE DB_AULA
+
+CREATE TABLE Nome(
+	ID_nome int primary key NOT NULL,
+	Nome varchar(255) NOT NULL,
+	Sobrenome varchar(255) NOT NULL,
+)
+
+CREATE TABLE Telefone(
+	ID_telefone int primary key identity NOT NULL,
+	DDD varchar(2) NOT NULL,
+	Numero varchar(10) NOT NULL,
+	Tipo_numero varchar(255) NOT NULL,
+	fk_id_nome int FOREIGN KEY REFERENCES nome(ID_Nome)
+)
+
+CREATE TABLE Corte(
+	ID_corte int primary key identity NOT NULL,
+	Tipo_corte varchar(255) NOT NULL,
+	Valor_corte numeric(5,2) NOT NULL
+)
+
+CREATE TABLE Barba(
+	ID_barba int primary key identity NOT NULL,
+	Tipo_barba varchar(255) NOT NULL,
+	Valor_barba numeric(5,2) NOT NULL
+)
+
+CREATE TABLE Atendimento(
+	ID_atendimento int primary key identity NOT NULL,
+	Horario TIME NOT NULL,
+	Data_atendimento DATE NOT NULL,
+	fk_id_corte int FOREIGN KEY REFERENCES corte(ID_corte),
+	fk_id_barba int FOREIGN KEY REFERENCES barba(ID_barba)
+)
+
+CREATE TABLE Cliente(
+	fk_id_telefone int FOREIGN KEY REFERENCES telefone(ID_telefone),
+	fk_id_nome int FOREIGN KEY REFERENCES nome(ID_Nome)
+)
+
+SELECT DATEFORMAT FROM SYSLANGUAGES WHERE NAME = @@LANGUAGE
+
+SELECT * FROM Nome
+SELECT * FROM Telefone
+SELECT * FROM Corte
+SELECT * FROM Barba
+SELECT * FROM Atendimento
+SELECT * FROM Cliente
+
+INSERT INTO Nome VALUES (1, 'Joao', 'Silva'), 
+(2, 'Ricardo', 'Gomes')
+
+INSERT INTO Telefone VALUES ('41', '99567-1021', 'Celular', 1),
+('42', '99787-2227', 'Celular', 2)
+
+INSERT INTO Corte VALUES ('Degradê', 25.00), 
+('Social', 20.00)
+
+INSERT INTO Barba VALUES ('Degradê', 15.00),
+('Normal', 12.00), ('Sem barba', 0.0)
+
+INSERT INTO Atendimento VALUES ('15:30:00', '02/22/2022', 2, 3),
+('17:30:00', '02/22/2022', 1, 1)
+
+INSERT INTO Cliente VALUES (1, 1),
+(2, 2)
+
+
+/*QUERYS*/
+SELECT Tipo_barba, Valor_barba from Barba where Valor_barba > 10
+
+SELECT Nome, Sobrenome from Nome where Nome = 'Joao'

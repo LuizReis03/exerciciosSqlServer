@@ -1,0 +1,214 @@
+–Alunos
+–Leonardo Falango
+–Luiz Reis
+–Matheus Souza
+/* Pesquisar e implementar exemplos DECENTES e colocar no drivre
+- Inserção de Arquivos em Massa (com Bulk Insert e com Openrowset;
+- Armazenamento de imagens no banco;
+- Manipulação de Data/Hora
+
+Grupos de até 3 ou individual. */
+
+/* ------------------------------- Bulk Insert e Openrowset ------------------------------- */
+
+-- Esses comandos servem basicamente para a importação de dados
+
+/*
+--> Bulk Insert
+
+Exemplo:
+
+BULK INSERT
+   { database_name.schema_name.table_or_view_name | schema_name.table_or_view_name | table_or_view_name }
+      FROM 'data_file'
+     [ WITH
+    (
+   [ [ , ] BATCHSIZE = batch_size ]
+   [ [ , ] CHECK_CONSTRAINTS ]
+   [ [ , ] CODEPAGE = { 'ACP' | 'OEM' | 'RAW' | 'code_page' } ]
+   [ [ , ] DATAFILETYPE =
+      { 'char' | 'native' | 'widechar' | 'widenative' } ]
+   [ [ , ] DATA_SOURCE = 'data_source_name' ]
+   [ [ , ] ERRORFILE = 'file_name' ]
+   [ [ , ] ERRORFILE_DATA_SOURCE = 'errorfile_data_source_name' ]
+   [ [ , ] FIRSTROW = first_row ]
+   [ [ , ] FIRE_TRIGGERS ]
+   [ [ , ] FORMATFILE_DATA_SOURCE = 'data_source_name' ]
+   [ [ , ] KEEPIDENTITY ]
+   [ [ , ] KEEPNULLS ]
+   [ [ , ] KILOBYTES_PER_BATCH = kilobytes_per_batch ]
+   [ [ , ] LASTROW = last_row ]
+   [ [ , ] MAXERRORS = max_errors ]
+   [ [ , ] ORDER ( { column [ ASC | DESC ] } [ ,...n ] ) ]
+   [ [ , ] ROWS_PER_BATCH = rows_per_batch ]
+   [ [ , ] ROWTERMINATOR = 'row_terminator' ]
+   [ [ , ] TABLOCK ]
+
+   -- input file format options
+   [ [ , ] FORMAT = 'CSV' ]
+   [ [ , ] FIELDQUOTE = 'quote_characters']
+   [ [ , ] FORMATFILE = 'format_file_path' ]
+   [ [ , ] FIELDTERMINATOR = 'field_terminator' ]
+   [ [ , ] ROWTERMINATOR = 'row_terminator' ]
+    )]
+
+Esses são todos os argumentos possíveis.
+Porém a maioria é padrão, fazendo com que a importação seja muito mais simples.
+
+
+
+Explicação:
+**database_name é o nome do banco de dados no qual os dados importados serão armazenados.
+
+*schema_name é o nome do esquema da tabela ou exibição, sendo esse um campo opcional se a execução da operação de importação for o mesmo esquema da tabela.
+
+**table_name é o argumento que especifica o nome da tabela para a qual os dados serão importados em massa.
+
+
+**FROM 'data_file' é o caminho do arquivo que contém os dados a serem importados.
+
+*BATCHSIZE é o número de linhas em cada lote. Se falhar, o SQL confirmará ou reverterá a transação de importação para cada lote.
+
+*CHECK_CONSTRAINTS é o argumento que especifica as restrições na tabela. FOREIGN KEY, PRIMARY KEY são exemplos de CONSTRAINTS.
+
+*CODEPAGE é o argumento responsável por especificar a página de código dos dados no arquivo. É importante apenas quando na base de dados, possue dados com caracteres menores que 32 ou maiores que 127.
+
+**DATAFILETYPE é o argumento responsável por especificar o BULK INSERT para executar a operação usando o tipo de valor especificado.
+char, native, widechar, widenative
+
+**DATA_SOURCE = 'data_source_name' é responsável por especificar a fonte de dados externa nomeada apontando para o local de Armazenamento de Blobs do Azure do arquivo que será importado.
+
+*ERRORFILE = 'error_file_path' é responsável por especificar o arquivo usado para coletar linhas com erros de formatação.
+
+**FORMAT especifica um arquivo de valores separados por vírgula em conformidade com o padrão. CSV
+
+**FIELDTERMINATOR é o caractere que indica que o campo acabou, o padrão é o caractere que representa o tab. Para arquivos CSV a vírgula é o FIELDTERMINATOR.
+
+**ROWTERMINATOR é o que determina que a linha acabou, o padrão é o caractere de nova linha.
+
+Exemplo prático
+*/
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'Desafio')
+    DROP DATABASE [Desafio]
+CREATE DATABASE Desafio
+GO
+USE Desafio
+CREATE TABLE Salaries (
+Id INT PRIMARY KEY,
+EmployeeName VARCHAR(255),
+JobTitle VARCHAR(255),
+BasePay VARCHAR(255),
+OvertimePay VARCHAR(255),
+OtherPay VARCHAR(255),
+Benefits VARCHAR(255),
+TotalPay VARCHAR(255),
+TotalPayBenefits VARCHAR(255),
+Year_att VARCHAR(255),
+Notes VARCHAR(MAX),
+Agency VARCHAR(MAX),
+Stat VARCHAR(MAX)
+)
+
+SELECT * FROM Salaries
+
+BULK INSERT Salaries
+FROM 'C:\Users\Aluno\Documents\Desafio\Salaries.csv'
+WITH(
+FIRSTROW = 2,
+FIELDTERMINATOR = ',',
+ROWTERMINATOR = '0x0a'
+)
+GO;
+SELECT * FROM Salaries
+
+/* ------------------------------- Exercicio 2 ------------------------------- */
+
+create table imagens (
+    id int identity (1, 1) not null,
+    nm_arquivo varchar(1000) not null,
+    vb_imagem varbinary(max) not null
+)
+
+SELECT * FROM imagens
+
+-- INSERE AS IMAGENS NA TABELA
+insert into imagens (nm_arquivo, vb_imagem) 
+    select
+        'Image',
+        *
+    from openrowset (bulk 'C:\Users\Aluno\Downloads\image.jpg', single_blob) imagem
+ 
+-- Consultar imagens no banco (a imagem fica em binário):
+select * from imagens
+
+
+/* ------------------------------- Exercicio 3 ------------------------------- */
+
+
+/*
+
+Manipulação de Data/Hora
+ Retornando a data e hora atual
+
+1 - GETDATE e CURRENT_TIMESTAMP retornam a data e hora local em um tipo de dados datetime.
+2 - GETUTCDATE retorna a hora UTC também no tipo de dados datetime.
+3 - SYSDATETIME retorna a data e hora local no tipo de dados datetime2.
+4 - SYSUTCDATETIME retorna a hora UTC também no tipo de dados datetime2.
+5 - SYSDATETIMEOFFSET retorna a hora local mais o número de horas e minutos de deslocamento do UTC no tipo de dados datetimeoffset.
+
+Incrementando e decrementando valores em uma data
+Para adicionar ou subtrair um intervalo de data ou hora em um valor para data utilize a função DATEADD.
+Retorna uma data especificada com o intervalo número especificado (inteiro com sinal) adicionado à datepart especificada dessa data.
+
+SELECT DATEADD(YEAR, -1, '2013-04-02T00:00:00'); -> Subtrai um ano da data informada
+SELECT DATEADD(YEAR, +1, '2014-04-02T00:00:00'); -> Adiciona um ano à data informada
+SELECT DATEADD(Day, 1, '2014-04-29T00:00:00'); -> Adiciona um dia da data
+SELECT DATEADD(Month, -1, '2014-04-29T00:00:00'); -> Subtrai um mês da data
+SELECT DATEADD(hour , +1, '2014-04-29T00:00:00'); -> Adiciona uma hora à data
+*/
+
+
+/* Retornando a data e hora atual */
+
+SELECT 'GETDATE()' AS [Function], GETDATE() AS [Value];
+SELECT 'CURRENT_TIMESTAMP()' AS [Function], CURRENT_TIMESTAMP AS [Value];
+SELECT 'GETUTCDATE()' AS [Function], GETUTCDATE() AS [Value];
+SELECT 'SYSDATETIME()' AS [Function], SYSDATETIME() AS [Value];
+SELECT 'SYSUTCDATETIME()' AS [Function], SYSUTCDATETIME() AS [Value];
+SELECT 'SYSDATETIMEOFFSET()' AS [Function], SYSDATETIMEOFFSET() AS [Value];
+
+/* Incrementando e decrementando valores em uma data */
+
+SELECT DATEADD(YEAR, -1, '2013-04-02T00:00:00'); /* Subtrai um ano da data informada */
+SELECT DATEADD(YEAR, +1, '2014-04-02T00:00:00'); /* Adiciona um ano à data informada */
+SELECT DATEADD(Day, 1, '2014-04-29T00:00:00'); /* Adiciona um dia da data */
+SELECT DATEADD(Month, -1, '2014-04-29T00:00:00'); /* Subtrai um mês da data */
+SELECT DATEADD(hour , +1, '2014-04-29T00:00:00'); /* Adiciona uma hora à data */
+
+/* Encontrando a diferença entre duas datas */
+
+SELECT DATEDIFF(year, '2005-12-31 23:59:59.9999999', '2006-01-01 00:00:00.0000000');
+SELECT DATEDIFF(quarter, '2005-12-31 23:59:59.9999999', '2006-01-01 00:00:00.0000000');
+SELECT DATEDIFF(month, '2005-12-31 23:59:59.9999999', '2006-01-01 00:00:00.0000000');
+SELECT DATEDIFF(dayofyear, '2005-12-31 23:59:59.9999999', '2006-01-01 00:00:00.0000000');
+SELECT DATEDIFF(day, '2005-12-31 23:59:59.9999999', '2006-01-01 00:00:00.0000000');
+SELECT DATEDIFF(week, '2005-12-31 23:59:59.9999999', '2006-01-01 00:00:00.0000000');
+SELECT DATEDIFF(hour, '2005-12-31 23:59:59.9999999', '2006-01-01 00:00:00.0000000');
+SELECT DATEDIFF(minute, '2005-12-31 23:59:59.9999999', '2006-01-01 00:00:00.0000000');
+SELECT DATEDIFF(second, '2005-12-31 23:59:59.9999999', '2006-01-01 00:00:00.0000000');
+SELECT DATEDIFF(millisecond, '2005-12-31 23:59:59.9999999', '2006-01-01 00:00:00.0000000');
+
+/* Exibindo o valor string de parte de uma data */
+
+SET LANGUAGE Portuguese
+
+/* Determinando o último dia do mês */
+
+SELECT Meusdados,
+EOMONTH(Meusdados) AS UltimoDiaDesteMes,
+EOMONTH(Meusdados, 1) AS UltimoDiaDoProximoMes
+FROM (VALUES ('2012-02-14t00:00:00' ),
+('2013-01-01t00:00:00'),
+('12013-12-31t23:59:59.9999999')) dt(Meusdados);
+
+
